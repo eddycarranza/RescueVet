@@ -3,20 +3,16 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
-// Auth
 import LoginPage from './components/auth/LoginPage'
 import RegisterPage from './components/auth/RegisterPage'
-
-// App pages
 import DashboardPage from './pages/DashboardPage'
 import NewPetPage from './pages/NewPetPage'
 import EditPetPage from './pages/EditPetPage'
 import PetDetailPage from './pages/PetDetailPage'
 import MedicalForm from './components/medical/MedicalForm'
 import ProfilePage from './pages/ProfilePage'
-
-// Public
 import EmergencyPage from './pages/EmergencyPage'
+import LandingPage from './pages/LandingPage'
 
 export default function App() {
   return (
@@ -36,12 +32,11 @@ export default function App() {
           }}
         />
         <Routes>
-          {/* Rutas públicas */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/emergencia/:token" element={<EmergencyPage />} />
 
-          {/* Rutas protegidas */}
           <Route path="/dashboard" element={
             <ProtectedRoute><DashboardPage /></ProtectedRoute>
           } />
@@ -61,9 +56,7 @@ export default function App() {
             <ProtectedRoute><ProfilePage /></ProtectedRoute>
           } />
 
-          {/* Redirección por defecto */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
