@@ -1,101 +1,269 @@
-import { Link } from 'react-router-dom'
-import { Camera, Syringe, Smartphone, Building2, Info, Rocket } from 'lucide-react'
-
-const FEATURES = [
-  { icon: Camera, color: 'text-blue-500', bg: 'bg-blue-50', title: 'Sube tus Carnets', text: 'Toma una foto de los carnets fisicos de vacunacion y nosotros los guardamos de forma segura.' },
-  { icon: Syringe, color: 'text-emerald-500', bg: 'bg-emerald-50', title: 'Vacunas Estandarizadas', text: 'Selecciona vacunas de un catalogo estandar peruano. Sin errores de tipeo ni datos desordenados.' },
-  { icon: Smartphone, color: 'text-slate-800', bg: 'bg-slate-100', title: 'Codigo QR Unico', text: 'Cada mascota recibe un QR que cualquier veterinario puede escanear para ver su historial completo.' },
-  { icon: Building2, color: 'text-orange-500', bg: 'bg-orange-50', title: 'Independiente', text: 'Registrate sin importar si tu clinica esta afiliada. Tu informacion es tuya, siempre.' },
-]
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase'; // Importación directa a Supabase agregada
+import { Check, ShieldCheck, Smartphone, QrCode } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function LandingPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error('Por favor ingresa tu email y contraseña');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Llamada nativa a Supabase v2 estructurada correctamente
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        toast.error('Credenciales incorrectas');
+        console.error("Error devuelto por Supabase:", error.message);
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      toast.error('Ocurrió un error interno al conectar');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScrollToLogin = () => {
+    const loginSection = document.getElementById('login-section');
+    if (loginSection) {
+      loginSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#F5F3E9] text-slate-800">
-      <nav className="sticky top-0 z-50 bg-[#F5F3E9]/90 backdrop-blur border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🐾</span>
-            <span className="font-extrabold text-slate-800 text-xl">RescueVet</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-slate-600 font-medium text-sm hover:text-slate-900 px-3 py-2">Iniciar Sesion</Link>
-            <Link to="/registro" className="bg-gradient-to-r from-blue-500 to-emerald-400 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:opacity-90 transition-all">Crear Cuenta</Link>
-          </div>
+    <div className="min-h-screen bg-[#FDFDF9] font-sans">
+      {/* 1. Navbar */}
+      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🐾</span>
+          <span className="text-xl font-extrabold text-slate-800 tracking-tight">RescueVet</span>
+        </div>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => navigate('/register')}
+            className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            Crear cuenta
+          </button>
+          <button 
+            onClick={handleScrollToLogin}
+            className="bg-gradient-to-r from-blue-500 to-emerald-400 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:opacity-90 transition-all active:scale-95"
+          >
+            Iniciar Sesión
+          </button>
         </div>
       </nav>
 
-      <section className="max-w-4xl mx-auto px-6 pt-20 pb-24 text-center">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="text-4xl">🐶</span>
-          <span className="text-4xl">🐱</span>
-        </div>
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-800 leading-tight mb-6">
-          El historial medico <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-400">digital</span> de tu mascota
-        </h1>
-        <p className="text-slate-600 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
-          Digitaliza los carnets de vacunacion, registra alergias y enfermedades, y comparte toda la informacion de tu mascota con cualquier veterinario mediante un simple codigo QR.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link to="/registro" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-emerald-400 text-white font-bold px-8 py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all shadow-lg text-base w-full sm:w-auto justify-center">
-            <Rocket className="w-5 h-5" />
-            Comenzar Gratis
-          </Link>
-          <a href="#features" className="inline-flex items-center gap-2 bg-white text-slate-700 font-bold px-8 py-4 rounded-2xl border border-stone-200 hover:shadow-md active:scale-95 transition-all text-base w-full sm:w-auto justify-center">
-            <Info className="w-5 h-5 text-slate-400" />
-            Conocer Mas
-          </a>
-        </div>
-        <div className="mt-10 flex items-center justify-center gap-3 text-slate-400 text-sm flex-wrap">
-          <div className="flex -space-x-2">
-            {['🐶','🐱','🐰','🐦','🐾'].map((e, i) => (
-              <div key={i} className="w-8 h-8 rounded-full bg-white border-2 border-[#F5F3E9] flex items-center justify-center text-base shadow-sm">{e}</div>
-            ))}
+      {/* 2. Bloque 1: Hero Section (Split Screen) */}
+      <main className="max-w-7xl mx-auto px-8 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+        {/* Mitad Izquierda: Texto */}
+        <div className="space-y-8">
+          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm border border-blue-100">
+            <span>🐾</span> DNI Digital para Mascotas
           </div>
-          <span>+2,000 mascotas ya tienen su historial digital</span>
-        </div>
-      </section>
-
-      <section id="features" className="max-w-6xl mx-auto px-6 pb-24">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-3">
-            Por que <span className="text-blue-500">RescueVet</span>?
-          </h2>
-          <p className="text-slate-500 text-lg max-w-xl mx-auto">Tu mascota merece un historial medico organizado y siempre accesible</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURES.map((f, i) => {
-            const Icon = f.icon
-            return (
-              <div key={i} className="bg-white rounded-2xl p-8 shadow-sm border border-stone-100 flex flex-col items-center text-center hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-                <div className={"w-16 h-16 rounded-2xl flex items-center justify-center mb-5 " + f.bg}>
-                  <Icon className={"w-8 h-8 " + f.color} />
-                </div>
-                <h3 className="font-extrabold text-slate-800 text-base mb-2">{f.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{f.text}</p>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="max-w-2xl mx-auto px-6 mt-4 mb-24 text-center">
-        <div className="bg-white rounded-3xl border border-stone-100 shadow-sm p-12">
-          <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-8 h-8 text-slate-700" />
-          </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4">Eres una clinica veterinaria en Peru?</h2>
-          <p className="text-slate-500 text-base leading-relaxed mb-8">
-            Ofrece a tus clientes el historial digital como herramienta de fidelizacion por solo <span className="text-blue-600 font-bold">S/ 29 mensuales</span>.
+          
+          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-[1.15] tracking-tight">
+            El historial médico que <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-400">
+              salva vidas
+            </span>
+          </h1>
+          
+          <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
+            Centraliza el historial médico de tu mascota y compártelo con cualquier veterinario en segundos mediante un simple código QR.
           </p>
-          <Link to="/registro" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-emerald-400 text-white font-bold px-8 py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all shadow-lg text-base">
-            Solicitar Demo
-          </Link>
+          
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <button 
+              onClick={() => navigate('/register')}
+              className="bg-emerald-400 hover:bg-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              Comenzar gratis
+              <span className="text-xl">→</span>
+            </button>
+            <button 
+              onClick={handleScrollToLogin}
+              className="bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 px-8 py-4 rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center"
+            >
+              Ya tengo cuenta
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-x-6 gap-y-3 pt-6 text-sm font-medium text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-500" />
+              Sin tarjeta de crédito
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-500" />
+              Acceso inmediato
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-emerald-500" />
+              Datos seguros
+            </div>
+          </div>
+        </div>
+
+        {/* Mitad Derecha: Ilustración UI */}
+        <div className="relative w-full aspect-square md:aspect-[4/3] bg-emerald-50 rounded-[2.5rem] flex items-center justify-center shadow-inner border border-emerald-100">
+          <div className="absolute inset-0 flex items-center justify-center opacity-20 text-9xl">
+            🐾
+          </div>
+          
+          {/* Tarjeta Flotante 1 */}
+          <div className="absolute top-12 right-8 md:right-16 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 animate-bounce" style={{animationDuration: '3s'}}>
+            <p className="text-xs text-slate-400 font-bold uppercase mb-1">Vacunas</p>
+            <p className="text-sm font-extrabold text-slate-800">Al día ✓</p>
+          </div>
+
+          {/* Tarjeta Flotante Principal */}
+          <div className="relative z-10 bg-white p-6 rounded-3xl shadow-2xl border border-gray-50 max-w-xs w-full mx-auto transform hover:scale-105 transition-transform duration-300">
+            <p className="text-xs text-slate-400 font-bold uppercase mb-1 text-center">Mascota registrada</p>
+            <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2">Max · Labrador</h3>
+            <div className="flex items-center justify-center gap-1.5 text-emerald-500 text-sm font-bold bg-emerald-50 py-1.5 px-3 rounded-lg w-fit mx-auto">
+              <Check className="w-4 h-4" />
+              Historial completo
+            </div>
+          </div>
+
+          {/* Tarjeta Flotante 3 */}
+          <div className="absolute bottom-16 left-8 md:left-12 bg-white p-4 rounded-2xl shadow-xl border border-gray-100">
+            <p className="text-xs text-slate-400 font-bold uppercase mb-1">QR Activo</p>
+            <p className="text-sm font-extrabold text-blue-600">Escaneable 24/7</p>
+          </div>
+        </div>
+      </main>
+
+      {/* 3. Bloque 2: Sección de Inicio de Sesión */}
+      <section id="login-section" className="border-t border-slate-100 bg-white">
+        <div className="max-w-7xl mx-auto px-8 py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Lado Izquierdo: Beneficios de Login */}
+          <div className="space-y-6">
+            <h2 className="text-4xl font-extrabold text-slate-900 leading-tight">
+              Tu mascota te espera. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-400">
+                Ingresa ahora.
+              </span>
+            </h2>
+            <p className="text-lg text-slate-500 max-w-md pb-4">
+              Accede a todos los perfiles, historiales médicos y códigos QR de tus mascotas desde un solo panel.
+            </p>
+            
+            <ul className="space-y-4">
+              <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <div className="bg-emerald-100 p-1.5 rounded-full">
+                  <Check className="w-4 h-4 text-emerald-600" />
+                </div>
+                Perfiles ilimitados de mascotas
+              </li>
+              <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <div className="bg-emerald-100 p-1.5 rounded-full">
+                  <Check className="w-4 h-4 text-emerald-600" />
+                </div>
+                Historial médico completo
+              </li>
+              <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <div className="bg-emerald-100 p-1.5 rounded-full">
+                  <QrCode className="w-4 h-4 text-emerald-600" />
+                </div>
+                QR de emergencia activo 24/7
+              </li>
+              <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <div className="bg-emerald-100 p-1.5 rounded-full">
+                  <Smartphone className="w-4 h-4 text-emerald-600" />
+                </div>
+                Acceso desde cualquier dispositivo
+              </li>
+            </ul>
+          </div>
+
+          {/* Lado Derecho: Formulario de Login */}
+          <div className="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-100">
+            <div className="mb-8">
+              <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Inicia sesión</h3>
+              <p className="text-slate-500 text-sm">Ingresa con tu cuenta para continuar</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-slate-50 focus:bg-white"
+                  placeholder="tu@email.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5" htmlFor="password">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-slate-50 focus:bg-white"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-emerald-400 hover:from-blue-600 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-70 mt-4"
+              >
+                {loading ? 'Verificando...' : 'Entrar'}
+              </button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+              <p className="text-sm text-slate-500">
+                ¿No tienes cuenta?{' '}
+                <button 
+                  onClick={() => navigate('/register')}
+                  className="font-bold text-blue-600 hover:text-blue-700"
+                >
+                  Regístrate gratis
+                </button>
+              </p>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      <footer className="border-t border-stone-200 py-8">
-        <p className="text-center text-slate-400 text-sm">© $(Get-Date -Format yyyy) RescueVet — Desarrollado en Peru</p>
+      {/* 4. Footer */}
+      <footer className="py-8 text-center border-t border-slate-100 bg-[#FDFDF9]">
+        <p className="text-sm font-medium text-slate-400">
+          © 2026 RescueVet — Desarrollado en Perú
+        </p>
       </footer>
     </div>
-  )
+  );
 }
